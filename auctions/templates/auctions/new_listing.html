@@ -1,0 +1,28 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+    {% if user.is_authenticated %}
+    <div class="form_container">
+        <h2>Create New Listing</h2>
+        <form class="listingform" action="{% url 'new_listing' %}" method="POST">
+            {% csrf_token %}
+            {% for input in listingform %}
+            <div class="listing_form_input">
+                <div class="input_label">
+                    {{ input.label }}
+                </div>
+                    {{ input }}
+            </div>
+            {% endfor %}
+            <input type="hidden" name="username" value="{{ user.username }}"/>
+            <div class="listing_form_input">
+                <div class="input_label">
+                    <input type="submit" value="Create Listing"/>
+                </div>
+            </div>
+        </form>
+    </div>
+    {% else %}
+        <p>Please sign in to create listing</p>
+    {% endif %}
+{% endblock %}

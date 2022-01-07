@@ -1,0 +1,93 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+    <h2 style="width:60%; margin:auto; padding-bottom:25px">{{ listing.title }}</h2>
+    <div style="width:60%; margin:auto">
+        <div style="float:left; padding-right:50px">
+            <img src="{{ listing.image }}" style="height:250px; width:250px; border-style:5px solid blue">
+            </br>
+            <p style="font-style: italic;">For sale by {{ listing.seller }}</p>
+        </div>
+        <div>
+                {% if bids.bid %}
+                <h5>Current bid: ${{ bids.bid }}</h5>
+                {% else %}
+                <h5>Starting bid: ${{ listing.start_bid }}</h5>
+                {% endif %}
+            <p>{{ listing.description }}</p>
+            <div>
+            {% if user.is_authenticated %}
+                {% if user != listing.seller %}
+                    <form action="{% url 'listing' listing.id %}" method="POST">
+                        {% csrf_token %}
+                        {% if bids.bid %}
+                            <label for="bid">Place bid: $
+                                <input type="number" step="0.01" min="{{ bids.bid|add:"1" }}" name="bid">
+                            </label>
+                        {% else %}
+                            <label for="bid">Place bid: $
+                                <input type="number" step="0.01" min="{{ listing.start_bid }}" name="bid">
+                            </label>
+                        {% endif %}
+                        <input type="hidden" name="user" value="{{ user.username }}"/>
+                        <input type="submit" value="Place Bid"/>
+                    </form>
+                {% else %}
+                    <form action="{% url 'close_listing' %}" method="POST">
+                        {% csrf_token %}
+                        <input type="hidden" name="user" value="{{ user.username }}"/>
+                        <input type="hidden" name="listing" value="{{ listing.id }}"/>
+                        <input type="submit" value="Close Auction" style="background-color: pink"/>
+                    </form>
+                {% endif %}
+                <br>
+                <form action="{% url 'watchlist' %}" method="POST">
+                    {% csrf_token %}
+                    <input type="hidden" name="user" value="{{ user.username }}"/>
+                    <input type="hidden" name="listing" value="{{ listing.id }}"/>
+                    {% if watchers %}
+                        {% if user in watchers %}
+                            <input type="submit" value="Remove from Watchlist" name="remove"/>
+                        {% else %}
+                        <input type="submit" value="Add to Watchlist" name="add"/>
+                        {% endif %}
+                    {% else %}
+                    <input type="submit" value="Add to Watchlist" name="add"/>
+                    {% endif %}
+                </form>
+            </div>
+                <div style="padding-top: 200px">
+                    <h4 style="margin:auto; width:40%; text-align:center; padding-bottom:40px">Comments Section</h4>
+                    <form action="{% url 'comments' %}" method="POST">
+                        {% csrf_token %}
+                        <input type="hidden" name="user" value="{{ user.username }}"/>
+                        <input type="hidden" name="listing" value="{{ listing.id }}"/>
+                        <label for="comment">
+                            Post a Comment:
+                                <textarea rows="2" cols="60" name="comment" placeholder="Comment here"></textarea>
+                        </label>
+                        <input type="submit" value="Post Comment"/>
+                </div>
+                {% endif %}
+                <div style="padding-top:30px">
+                    {% if comments %}
+                    <div>
+                        <h5>Previous Comments:</h5>
+                    </div>
+                    {% endif %}
+                    {% for comment in comments %}
+                    <div>
+                        <p>{{ comment.comment }}</p>
+                    </div>
+                    <div>
+                        <p style="font-style: italic; font-weight:light;">by {{ comment.user }}, {{ comment.time }}</p>
+                    </div>
+                    {% empty %}
+                    <div>
+                        <h5>No Comments Yet</h5>
+                    </div>
+                    {% endfor %}
+                </div>
+        </div>
+    </div>
+{% endblock %}

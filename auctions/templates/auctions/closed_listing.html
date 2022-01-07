@@ -1,0 +1,62 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+<h2 style="width:60%; margin:auto; padding-bottom:25px">{{ listing.title }}<span style="color:red"> - AUCTION CLOSED</span></h2>
+<div style="width:60%; margin:auto">
+    <div style="float:left; padding-right:50px">
+        <img src="{{ listing.image }}" style="height:250px; width:250px; border-style:5px solid blue">
+    </div>
+    <div>
+        {% if bids.bid %}
+        <h5 style="font-style: italic">Sold by {{ listing.seller }} to {{ bids.bidder.username }}</h5>
+        <h5>Winning bid: ${{ bids.bid }}</h5>
+        {% else %}
+        <h5>No Sale. Item withdrawn by {{ listing.seller }}</h5>
+        {% endif %}
+            <p>{{ listing.description }}</p>
+    </div>
+    <div>
+        {% if bids.bid %}
+            {% if user.is_authenticated %}
+                {% if user.username == bids.bidder.username %}
+                    <h3 style="color:green; width:60%; margin:auto;">You have won the auction!</h3>
+                {% endif %}
+            {% endif %}
+        {% endif %}
+    </div>
+    {% if user.is_authenticated %}
+    <div style="padding-top: 200px">
+        <h4 style="margin:auto; width:40%; text-align:center; padding-bottom:40px">Comments Section</h4>
+        <form action="{% url 'comments' %}" method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="user" value="{{ user.username }}"/>
+            <input type="hidden" name="listing" value="{{ listing.id }}"/>
+            <label for="comment">
+                Post a Comment:
+                    <textarea rows="2" cols="60" name="comment" placeholder="Comment here"></textarea>
+            </label>
+            <input type="submit" value="Post Comment"/>
+    </div>
+    {% endif %}
+    <div style="padding-top:30px">
+        {% if comments %}
+        <div>
+            <h5>Previous Comments:</h5>
+        </div>
+        {% endif %}
+        {% for comment in comments %}
+        <div>
+            <p>{{ comment.comment }}</p>
+        </div>
+        <div>
+            <p style="font-style: italic; font-weight:light;">by {{ comment.user }}, {{ comment.time }}</p>
+        </div>
+        {% empty %}
+        <div>
+            <h5>No Comments Yet</h5>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+    
+{% endblock %}
